@@ -45,5 +45,23 @@ Possible optimization by switching to Meanly FSM.
 ![alt text](https://github.com/yeoshuyi/Custom-6M-Baud-UART-with-Speculative-FIFO/blob/main/FFLatency.png "2-FF Async Latency")
 ![alt text](https://github.com/yeoshuyi/Custom-6M-Baud-UART-with-Speculative-FIFO/blob/main/TimingReport.png "Timing Report")
 ![alt text](https://github.com/yeoshuyi/Custom-6M-Baud-UART-with-Speculative-FIFO/blob/main/PowerReport.png "Power Report")
+
 ## Updates
 > Timing constraints and logic verified on testbench, have not tested on hardware
+
+## In-Depth Explaination
+
+### CLK Generation
+The onboard 100MHz Crystal is insufficient to oversample the serial UART communication at 6M baud. Thus, a onboard MMCM(PLL) is used to synthesise a 288MHz CLK. Natively, the 288MHz CLK oversamples by x48. A simple counter is used to generate a tick every 3 288MHz clock cycles for 16x oversampling, while sequential logic can still flow at 288MHz. The tick counter is reset upon detection of start bit using a baud reset signal from the receiver, to ensure phase synchronisation with the 2-FF synchronised UART signal
+
+### UART Receiver
+The receiver is modelled as a Moore FSM, which introduces 1 clock cycle of delay for buffering. At the input, the asynchronous UART signal is put through 2-FF synchronisation to eliminate metainstability. This 2-FF system utilizes the IOB and triggers at double edge to reduce latency down to around 0.5 clock cycles. The total overhead latency through the UART receiver is thus around 1.5 clock cycles, as measured in the pictorial above. </br>
+
+Upon detection of start bit, the FSM waits 8 ticks before sampling data at 16 tick intervals, shifting data into the register. Parity calculation is performed with each sample using combinational circuit to remove the clock cycle delay traditionally required at the end of frame to check parity. If Even Parity passes, the FSM outputs a 0 in the 9th bit position in the data register. </br>
+
+Upon detection of the last data bit, the FSM speculatively writes the data onto custom FIFO before checking for stop bit. This removes the clock cycle delay traditionally required to write to BRAM FIFOs after stop bit check. Upon detection of stop bit, the FSM immediately sends a commit or rollback signal to the FIFO.
+
+### Speculative FIFO
+The FIFO is designed to use a BRAM of 4096 address depth to provide sufficient space for accumulation should read operation be interrupted. At 6M baud rate, this provides around 7.5ms of accumulation at maximum throughput before hitting full. A 3 pointer design (speculative write, committed write, read) is used to enable speculative writing and rollback to remove input latency. When write enable is first detected, input data is shifted into BRAM, but committed write pointer does not increase until a commit signal is detected. Lookahead using a shadow register bypasses the FIFO to provide first-word-fall-through effect. The combination of speculative write and first-word-fall-through allows the data to be read immediately as soon as committed is asserted. </br>
+
+However, latency still exists due to the crossing of clock domains. The committed write pointer is converted to gray code and passed through a 2-FF synchroniser into the 100MHz clock domain at the read side of the FIFO. This introduces a 2 clock cycle delay to the system, which could potentially be mitigated by having the read side at 288MHz as well.
