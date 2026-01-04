@@ -41,7 +41,9 @@ Possible optimization by switching to Meanly FSM.
 5) 4096addr deep FIFO to allow for >7ms accumulation at max throughput (6M Baud)
 
 ## Pictorials
-To be added
-
+![alt text](https://github.com/yeoshuyi/Custom-6M-Baud-UART-with-Speculative-FIFO/blob/main/OverallLatency.png "Overall Latency")
+![alt text](https://github.com/yeoshuyi/Custom-6M-Baud-UART-with-Speculative-FIFO/blob/main/FFLatency.png "2-FF Async Latency")
+![alt text](https://github.com/yeoshuyi/Custom-6M-Baud-UART-with-Speculative-FIFO/blob/main/TimingReport.png "Timing Report")
+![alt text](https://github.com/yeoshuyi/Custom-6M-Baud-UART-with-Speculative-FIFO/blob/main/PowerReport.png "Power Report")
 ## Updates
 > Timing constraints and logic verified on testbench, have not tested on hardware
