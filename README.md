@@ -10,22 +10,23 @@
 7) Receiver:       Moore FSM
 
 ## Current Testbench Timings
-Worst Negative Slack:   +0.273ns<br/>
-Worst Hold Slack:       +0.114ns<br/>
-End-of-frame to Data:   -58.33ns*<br/>
+ - Worst Negative Slack:   +0.273ns
+ - Worst Hold Slack:       +0.114ns
+ - End-of-frame to Data:   -58.33ns*
 *Data appears at FIFO before frame even ends using speculative write and middle-of-bit measurement
+
 ### Overhead Latency Contributions
-RX CDC 2-FF Sync:       1.936ns (0.5 tick at 255MHz Domain)<br/>
-Receiver Moore FSM:     3.473ns (1 tick at 255MHz Domain)<br/>
-FIFO Ptr CDC 2-FF Sync: 20.150ns (2 tick at 100MHz Domain)<br/>
-Further optimization will prove difficult due to 2-FF limitations.<br/>
+ - RX CDC 2-FF Sync:       1.936ns (0.5 tick at 255MHz Domain)
+ - Receiver Moore FSM:     3.473ns (1 tick at 255MHz Domain)
+ - FIFO Ptr CDC 2-FF Sync: 20.150ns (2 tick at 100MHz Domain)
+Further optimization will prove difficult due to 2-FF limitations. <br/>
 Possible optimization by switching to Meanly FSM.
 
 ## Low Latency Optimization
 1) Double-edge detection to cut down 2FF input buffer to 1.5ticks delay
-2) ULL write-to-read FIFO using speculative write, FWFT and almostFull
+2) FIFO uses speculative write, FWFT and lookahead for 0 latency writes (Data ready as soon as commit)
   - Speculative write to send data to FIFO when last data bit is read, and immediately commit when stop bit is validated using combinational logic
-  - FWFT to ensure data appears on read side of FIFO when commit is asserted
+  - FWFT using shadow registers to ensure data appears on read side of FIFO when commit is asserted
   - almostFull flag to allow for burst read/writes
 3) Synthesised 288MHZ Clk to reduce tick cycle
 4) Calculated parity bits concurently with each data bit read using XOR, to mitigate parity bit check delay
