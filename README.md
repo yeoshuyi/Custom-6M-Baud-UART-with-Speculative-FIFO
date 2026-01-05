@@ -42,11 +42,11 @@ Possible optimization by switching to Meanly FSM.
 
 ## Pictorials
 ![alt text](https://github.com/yeoshuyi/Custom-6M-Baud-UART-with-Speculative-FIFO/blob/main/OverallLatency.png "Overall Latency")
-> Byte transmission starts at 11,000ns and ends at 12,833ns. Data is ready at the FIFO read by 12,775ns (Immediately after stop bit verification)
+> Byte transmission starts at 11,000ns and ends at 12,833ns. Data is ready at the FIFO read by 12,775ns (Immediately after stop bit verification)</br>
 ![alt text](https://github.com/yeoshuyi/Custom-6M-Baud-UART-with-Speculative-FIFO/blob/main/FFLatency.png "2-FF Async Latency")
-> 2-FF Stage to reject metastability contributes to a 1.936ns delay in RX reading
+> 2-FF Stage to reject metastability contributes to a 1.936ns delay in RX reading</br>
 ![alt text](https://github.com/yeoshuyi/Custom-6M-Baud-UART-with-Speculative-FIFO/blob/main/TimingReport.png "Timing Report")
-> WNS and WHS within tolerance
+> WNS and WHS within tolerance</br>
 ![alt text](https://github.com/yeoshuyi/Custom-6M-Baud-UART-with-Speculative-FIFO/blob/main/PowerReport.png "Power Report")
 
 ## Updates
