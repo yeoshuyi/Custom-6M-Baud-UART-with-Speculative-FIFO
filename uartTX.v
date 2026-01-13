@@ -3,7 +3,7 @@ module uartTX
     input wire tick,
     input wire CLK288MHZ,
     input wire reset,
-    input wire [8:0] dataIn,
+    input wire [7:0] dataIn,
     input wire fifoNE,
     output reg readEn,
     output wire uart_txd_in
@@ -15,6 +15,7 @@ module uartTX
     reg [0:0] parityCount, nextParityCount;
     reg nextReadEn;
     reg tx, nextTx;
+    reg sendParity, nextSendParity;
 
     localparam [1:0]    idle = 2'b00,
                         start = 2'b01,
@@ -31,6 +32,7 @@ module uartTX
             tx <= 1'b1;
             parityCount <= 0;
             readEn <= 0;
+            sendParity <= 0;
         end else
         begin
             state <= nextState;
@@ -39,6 +41,7 @@ module uartTX
             tx <= nextTx;
             parityCount <= nextParityCount;
             readEn <= nextReadEn;
+            sendParity <= nextSendParity;
         end
     end
     
@@ -50,6 +53,7 @@ module uartTX
         nextTx = tx;
         nextParityCount = parityCount;
         nextReadEn = readEn;
+        nextSendParity = sendParity;
         
         case(state)
         
@@ -74,11 +78,11 @@ module uartTX
                         nextState = txd;
                         nextNumTick = 0;
                         nextNumBits = 0;
+                        nextTx = dataIn[0];
+                        nextParityCount = dataIn[0];
                     end else
                     begin
                         nextNumTick = numTick + 1;
-                        nextTx = dataIn[0];
-                        nextParityCount = dataIn[0];
                     end
                 end    
             end
@@ -89,13 +93,14 @@ module uartTX
                 begin
                     if(numTick == 15)
                     begin
+                        nextNumTick = 0;
                         if(numBits == 7)
                         begin
                             nextState = stop;
-                            nextNumTick = 0;
                             nextNumBits = 0;
                             nextTx = parityCount;
                             nextReadEn = 1'b1;
+                            nextSendParity = 1'b1;
                         end else
                         begin
                             nextNumBits = numBits + 1;
@@ -111,15 +116,18 @@ module uartTX
             
             stop:
             begin
-                if(tick)
                 nextReadEn = 0;
+                if(tick)
                 begin
-                    if(numTick > 15) nextTx = 1'b1;
-                    if(numTick == 31)
+                    if(numTick == 15 & sendParity)
                     begin
-                        if(fifoNE) nextState = start;
-                        else nextState = idle;
+                        nextSendParity = 0;
+                        nextTx = 1'b1;
                         nextNumTick = 0;
+                    end else if(numTick == 15)
+                    begin
+                        if(readEn) nextState = start;
+                        else nextState = idle;
                     end else
                     begin
                         nextNumTick = numTick + 1;
