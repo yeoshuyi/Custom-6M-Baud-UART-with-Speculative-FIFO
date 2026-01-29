@@ -116,7 +116,7 @@ module uartTX
             
             stop:
             begin
-                nextReadEn = 0;
+                nextReadEn = 0; 
                 if(tick)
                 begin
                     if(numTick == 15 & sendParity)

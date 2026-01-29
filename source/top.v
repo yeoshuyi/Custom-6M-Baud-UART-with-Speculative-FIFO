@@ -23,7 +23,9 @@ module top(
     input reset,
     input CLK100MHZ,
     input uart_rxd_out,
-    output [8:0] rxData
+    output uart_txd_in,
+    output ja_tx,
+    output ja_rx
     );
     
     wire CLK288MHZ;
@@ -32,9 +34,14 @@ module top(
     wire rxWriteEn;
     wire rxRollbackWrite;
     wire rxTick;
+    wire rxData;
     wire [8:0] rxDataFifo;
     wire stable288;
     wire systemReset = reset || !stable288;
+    
+    wire txTick;
+    wire txReadEn;
+    wire fifoNE;
     
     freqSynth freqSynthModule
     (
@@ -50,6 +57,14 @@ module top(
         .baudReset(baudReset),
         .CLK288MHZ(CLK288MHZ),
         .tick(rxTick)
+    );
+    
+    baudGen txBaudGen
+    (
+        .reset(systemReset),
+        .baudReset(1'b0),
+        .CLK288MHZ(CLK288MHZ),
+        .tick(txTick)
     );
     
     uartRX uartRXModule
@@ -73,17 +88,24 @@ module top(
         .commitWrite(rxCommitWrite),
         .rollbackWrite(rxRollbackWrite),
         .readClk(CLK100MHZ),
-        .readEn(1'b1),
+        .readEn(txReadEn),
         .dataOut(rxData),
-        .reset(reset)
+        .reset(reset),
+        .notEmpty(fifoNE)
     );
     
-//    baudGen txBaudGen
-//    (
-//        .reset(systemReset),
-//        .baudReset(1'b0),
-//        .CLK288MHZ(CLK288MHZ),
-//        .tick(txTick)
-//    );
+    uartTX uartTXModule
+    (
+        .tick(txTick),
+        .CLK288MHZ(CLK288MHZ),
+        .reset(reset),
+        .dataIn(rxData),
+        .fifoNE(fifoNE),
+        .readEn(txReadEn),
+        .uart_txd_in(uart_txd_in)
+    );
+    
+    assign ja_rx = uart_rxd_out;
+    assign ja_tx = uart_txd_in;
     
 endmodule
