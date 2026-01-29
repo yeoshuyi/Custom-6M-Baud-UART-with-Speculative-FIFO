@@ -1,4 +1,6 @@
 # ULL High-Throughput FPGA-UART Bridge with 0 Latency Speculative-Write BRAM FIFO with Async Clock Domains
+## A note on the current progress of this project
+> I will probably pause this project indefinitely. While the architecture works on simulation and is synthesizable on the actual FPGA board, I am not able to verify the output physically as my laptop can only transcieve up to 2M baud rate. This is a beginner project, please take it with a grain of salt.
 
 ## Design Specifications
 1) FPGA Board:     Arty-S7
