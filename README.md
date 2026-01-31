@@ -13,7 +13,7 @@
  - An ESP32 is used to output 8O1 at 6M Baud, which is received by the FPGA via JA1. 
  - The FIFO output is sent directly back to the UART transmitter.
  
-![alt text](https://github.com/yeoshuyi/Custom-6M-Baud-UART-with-Speculative-FIFO/blob/main/MAP002.BMP "Oscilloscope Reading")
+![alt text](https://github.com/yeoshuyi/Custom-6M-Baud-UART-with-Speculative-FIFO/blob/main/MAP002.BMP "Oscilloscope Reading")<br/><br/>
 The FPGA transmits ~80ns after the stop-bit is first asserted (immediately when stop-bit is sampled at half-bit) <br/>
 ![alt text](https://github.com/yeoshuyi/Custom-6M-Baud-UART-with-Speculative-FIFO/blob/main/TestSetup.jpg "Test Setup")
 The UART TX/RX buffers assigned to JA1 on the FPGA is directly shorted to the UART TX/RX pins on the ESP32. A simple program is used to ping the FPGA. Output is monitored directly on the oscilloscope.
