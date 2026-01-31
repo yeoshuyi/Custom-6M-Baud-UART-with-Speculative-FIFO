@@ -23,9 +23,9 @@ module top(
     input reset,
     input CLK100MHZ,
     input uart_rxd_out,
-    output uart_txd_in,
-    output ja_tx,
-    output ja_rx
+    output uart_txd_in
+    //output ja_tx,
+    //output ja_rx
     );
     
     wire CLK288MHZ;
@@ -34,7 +34,7 @@ module top(
     wire rxWriteEn;
     wire rxRollbackWrite;
     wire rxTick;
-    wire rxData;
+    wire [8:0]rxData;
     wire [8:0] rxDataFifo;
     wire stable288;
     wire systemReset = reset || !stable288;
@@ -105,7 +105,7 @@ module top(
         .uart_txd_in(uart_txd_in)
     );
     
-    assign ja_rx = uart_rxd_out;
-    assign ja_tx = uart_txd_in;
+    //assign ja_rx = uart_rxd_out;
+    //assign ja_tx = uart_txd_in;
     
 endmodule

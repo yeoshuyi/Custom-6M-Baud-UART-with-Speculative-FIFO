@@ -5,7 +5,6 @@ set_clock_groups -asynchronous \
     -group [get_clocks -include_generated_clocks unbuffedCLK288MHZ] \
     -group [get_clocks -include_generated_clocks sys_clk_pin]
 
-set_property -dict { PACKAGE_PIN V12   IOSTANDARD LVCMOS33 } [get_ports { uart_rxd_out }]; #IO_25_14 Sch=uart_rxd_out 
 set_property IOB TRUE [get_cells -hierarchical *rxSync_reg*];
 
 set_max_delay -from [get_cells -hierarchical *wrPtrGray_reg*] \
@@ -18,11 +17,11 @@ add_cells_to_pblock [get_pblocks pblock_UART_FIFO] [get_cells -hierarchical fifo
 add_cells_to_pblock [get_pblocks pblock_UART_FIFO] [get_cells -hierarchical uartRXModule]
 resize_pblock [get_pblocks pblock_UART_FIFO] -add {SLICE_X10Y10:SLICE_X20Y30}
 
-              
+set_property -dict { PACKAGE_PIN V12   IOSTANDARD LVCMOS33 } [get_ports { uart_rxd_out }]; #IO_25_14 Sch=uart_rxd_out               
 set_property -dict { PACKAGE_PIN R12   IOSTANDARD LVCMOS33 } [get_ports { uart_txd_in }]; #IO_L24N_T3_A00_D16_14 Sch=uart_txd_in 
 set_property -dict { PACKAGE_PIN R12 IOSTANDARD LVCMOS33 DRIVE 16 SLEW FAST } [get_ports { uart_tx_out }];
 
 set_property -dict { PACKAGE_PIN G15   IOSTANDARD LVCMOS33 } [get_ports { reset }]; #IO_L18N_T2_A23_15 Sch=btn[0] 
 
-set_property -dict { PACKAGE_PIN L17   IOSTANDARD LVCMOS33 } [get_ports { ja_rx }]; #IO_L4P_T0_D04_14 Sch=ja_p[1] 
-set_property -dict { PACKAGE_PIN L18   IOSTANDARD LVCMOS33 } [get_ports { ja_tx }]; #IO_L4N_T0_D05_14 Sch=ja_n[1] 
+set_property -dict { PACKAGE_PIN L17   IOSTANDARD LVCMOS33 } [get_ports { uart_rxd_out }]; #IO_L4P_T0_D04_14 Sch=ja_p[1] 
+set_property -dict { PACKAGE_PIN L18   IOSTANDARD LVCMOS33 } [get_ports { uart_txd_in }]; #IO_L4N_T0_D05_14 Sch=ja_n[1] 

@@ -1,17 +1,43 @@
 # ULL High-Throughput FPGA-UART Bridge with 0 Latency Speculative-Write BRAM FIFO with Async Clock Domains
-## A note on the current progress of this project
-> I will probably pause this project indefinitely. While the architecture works on simulation and is synthesizable on the actual FPGA board, I am not able to verify the output physically as my laptop can only transcieve up to 2M baud rate. This is a beginner project, please take it with a grain of salt.
 
 ## Design Specifications
 1) FPGA Board:     Arty-S7
-2) UART Baud Rate: 6,000,000Baud
-3) UART Protocol:  8P1 (1bit Start, 1bit Stop)
-4) Clock Rate:     Use 100MHz On-board CLK to synthesis 288MHz CLK with MMCM
+2) UART Baud Rate: 6,000,000Baud (Hardware verified)
+3) UART Protocol:  8O1 (1bit Start, 1bit Odd Parity, 1bit Stop)
+4) Clock Rate:     288MHz (Via MMCM synthesis) and 100MHz native
 5) Sampling Rate:  16x Oversample
-6) FIFO Buffer:    BRAM with 4096Addr, 3 Pointer Speculative Write with Rollback, FWFT with CDC
-7) Receiver:       Moore FSM
+6) FIFO Buffer:    BRAM with 4096 depth, 3 Pointer Speculative Write with Rollback, FWFT with CDC
+7) Transmitter / Receiver:       Moore FSM
+
+## Hardware Testing
+ - An ESP32 is used to output 8O1 at 6M Baud, which is received by the FPGA via JA1. 
+ - The FIFO output is sent directly back to the UART transmitter.
+ 
+![alt text](https://github.com/yeoshuyi/Custom-6M-Baud-UART-with-Speculative-FIFO/blob/main/MAP002.BMP "Oscilloscope Reading")
+> The FPGA transmits ~80ns after the stop-bit is first asserted (immediately when stop-bit is sampled at half-bit)
+![alt text](https://github.com/yeoshuyi/Custom-6M-Baud-UART-with-Speculative-FIFO/blob/main/TestSetup.jpg "Test Setup")
+The UART TX/RX buffers assigned to JA1 on the FPGA is directly shorted to the UART TX/RX pins on the ESP32. A simple program is used to ping the FPGA. Output is monitored directly on the oscilloscope.
+```C++
+void setup() {
+  // Laptop Monitor
+  Serial.begin(115200); 
+  Serial1.begin(BAUD_RATE, SERIAL_8O1, RX_PIN, TX_PIN);
+  
+  delay(2000);
+}
+
+void loop() {
+  uint8_t testByte = 0xAB;
+
+  Serial1.write(testByte);
+  delay(50b);
+}
+```
+ 
+ > Currently facing intermittent issues where the same data is re-transmitted. This is likely due to slow update of FIFO not empty flag due to CDC and gray encoding.
 
 ## Current Testbench Timings
+> Outdated! Several revisions made after hardware implementation, but I don't plan to rewrite this section.
  - Worst Negative Slack:   +0.273ns
  - Worst Hold Slack:       +0.114ns
  - End-of-frame to Data:   -58.33ns* <br/>
@@ -43,6 +69,7 @@ Possible optimization by switching to Meanly FSM.
 5) 4096addr deep FIFO to allow for >7ms accumulation at max throughput (6M Baud)
 
 ## Pictorials
+> Outdated! Several revisions made after hardware implementation, but I don't plan to rewrite this section.
 ![alt text](https://github.com/yeoshuyi/Custom-6M-Baud-UART-with-Speculative-FIFO/blob/main/OverallLatency.png "Overall Latency")
 > Byte transmission starts at 11,000ns and ends at 12,833ns. Data is ready at the FIFO read by 12,775ns (Immediately after stop bit verification).</br>
 
@@ -54,10 +81,7 @@ Possible optimization by switching to Meanly FSM.
 
 ![alt text](https://github.com/yeoshuyi/Custom-6M-Baud-UART-with-Speculative-FIFO/blob/main/PowerReport.png "Power Report")
 
-## Updates
-> Timing constraints and logic verified on testbench, have not tested on hardware
-
-## In-Depth Explaination
+## In-Depth Explanation
 
 ### CLK Generation
 The onboard 100MHz Crystal is insufficient to oversample the serial UART communication at 6M baud. Thus, a onboard MMCM(PLL) is used to synthesise a 288MHz CLK. Natively, the 288MHz CLK oversamples by x48. A simple counter is used to generate a tick every 3 288MHz clock cycles for 16x oversampling, while sequential logic can still flow at 288MHz. The tick counter is reset upon detection of start bit using a baud reset signal from the receiver, to ensure phase synchronisation with the 2-FF synchronised UART signal.
@@ -73,3 +97,6 @@ Upon detection of the last data bit, the FSM speculatively writes the data onto 
 The FIFO is designed to use a BRAM of 4096 address depth to provide sufficient space for accumulation should read operation be interrupted. At 6M baud rate, this provides around 7.5ms of accumulation at maximum throughput before hitting full. A 3 pointer design (speculative write, committed write, read) is used to enable speculative writing and rollback to remove input latency. When write enable is first detected, input data is shifted into BRAM, but committed write pointer does not increase until a commit signal is detected. Lookahead using a shadow register bypasses the FIFO to provide first-word-fall-through effect. The combination of speculative write and first-word-fall-through allows the data to be read immediately as soon as committed is asserted. </br>
 
 However, latency still exists due to the crossing of clock domains. The committed write pointer is converted to gray code and passed through a 2-FF synchroniser into the 100MHz clock domain at the read side of the FIFO. This introduces a 2 clock cycle delay to the system, which could potentially be mitigated by having the read side at 288MHz as well.
+
+### UART Transmitter
+Nothing special here, similar to how the UART Receiver works. An 8-bit register is used to copy the FIFO read data and assert read enable immediately upon detecting FIFO not empty. By copying the data and triggering read enable early, 
