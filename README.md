@@ -14,7 +14,7 @@
  - The FIFO output is sent directly back to the UART transmitter.
  
 ![alt text](https://github.com/yeoshuyi/Custom-6M-Baud-UART-with-Speculative-FIFO/blob/main/MAP002.BMP "Oscilloscope Reading")
-> The FPGA transmits ~80ns after the stop-bit is first asserted (immediately when stop-bit is sampled at half-bit)
+> The FPGA transmits ~80ns after the stop-bit is first asserted (immediately when stop-bit is sampled at half-bit)<br/>
 ![alt text](https://github.com/yeoshuyi/Custom-6M-Baud-UART-with-Speculative-FIFO/blob/main/TestSetup.jpg "Test Setup")
 The UART TX/RX buffers assigned to JA1 on the FPGA is directly shorted to the UART TX/RX pins on the ESP32. A simple program is used to ping the FPGA. Output is monitored directly on the oscilloscope.
 ```C++
@@ -34,10 +34,10 @@ void loop() {
 }
 ```
  
- > Currently facing intermittent issues where the same data is re-transmitted. This is likely due to slow update of FIFO not empty flag due to CDC and gray encoding.
+ > Currently facing intermittent issues where the same data is re-transmitted. This is likely due to slow update of FIFO not empty flag due to CDC and gray encoding.<br/>
 
 ## Current Testbench Timings
-> Outdated! Several revisions made after hardware implementation, but I don't plan to rewrite this section.
+> Outdated! Several revisions made after hardware implementation, but I don't plan to rewrite this section.<br/>
  - Worst Negative Slack:   +0.273ns
  - Worst Hold Slack:       +0.114ns
  - End-of-frame to Data:   -58.33ns* <br/>
@@ -69,7 +69,7 @@ Possible optimization by switching to Meanly FSM.
 5) 4096addr deep FIFO to allow for >7ms accumulation at max throughput (6M Baud)
 
 ## Pictorials
-> Outdated! Several revisions made after hardware implementation, but I don't plan to rewrite this section.
+> Outdated! Several revisions made after hardware implementation, but I don't plan to rewrite this section.<br/>
 ![alt text](https://github.com/yeoshuyi/Custom-6M-Baud-UART-with-Speculative-FIFO/blob/main/OverallLatency.png "Overall Latency")
 > Byte transmission starts at 11,000ns and ends at 12,833ns. Data is ready at the FIFO read by 12,775ns (Immediately after stop bit verification).</br>
 
