@@ -17,8 +17,6 @@ module fifo
     input wire writeEn,
     input wire commitWrite,
     input wire rollbackWrite,
-//    output wire full,
-//    output wire notFull,
     output wire almostFull,
     
     //Read
@@ -120,10 +118,6 @@ module fifo
     begin
         {rdPtrGraySync[1], rdPtrGraySync[0]} <= {rdPtrGraySync[0], rdPtrGray};
     end
-    
-    //ptr[12] is the lap bit
-//    assign full = (wrPtrGray == {~rdPtrGraySync[1][12:11], rdPtrGraySync[1][10:0]});
-//    assign notFull = ~full;
     
     assign empty = (comPtrGraySync[1] == rdPtrGray);
     assign notEmpty = ~empty;
